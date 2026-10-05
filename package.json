@@ -1,0 +1,22 @@
+{
+  "name": "lyricslide",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch backend/src/server.js",
+    "start": "node backend/src/server.js",
+    "frontend": "node scripts/start-frontend.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@google/genai": "^1.11.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}

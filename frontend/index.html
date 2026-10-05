@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#142e57">
+  <meta name="description" content="Turn authorized hymn and song content into beautiful lyric presentations.">
+  <title>LyricSlide — lyrics, ready to share</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/presentation.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <main class="landing" id="landing">
+    <div class="landing-glow glow-one"></div><div class="landing-glow glow-two"></div>
+    <header class="brand"><span class="brand-mark" aria-hidden="true">♪</span><span>LyricSlide</span><span class="brand-tag">WORSHIP, MADE VISIBLE</span></header>
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow"><span></span> A brighter way to sing together</p>
+      <h1 id="hero-title">Words that bring<br><em>us together.</em></h1>
+      <p class="hero-copy">Turn an authorized hymn or song into a beautiful, ready-to-project lyric presentation.</p>
+      <form id="generate-form" class="generator">
+        <label for="youtube-url">YouTube video link</label>
+        <div class="input-wrap"><span class="link-icon" aria-hidden="true">↗</span><input id="youtube-url" name="youtubeUrl" type="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="url" required><button id="generate-button" type="submit"><span>Make my slides</span><span aria-hidden="true">→</span></button></div>
+        <p class="form-note">Only submit media you’re authorized to process.</p>
+      </form>
+      <div class="status-panel" id="status-panel" aria-live="polite" hidden>
+        <div class="status-top"><span class="spinner" aria-hidden="true"></span><strong id="status-title">Preparing your presentation</strong></div>
+        <ol class="stages" id="stages"><li data-stage="validate">Check link</li><li data-stage="media">Prepare audio</li><li data-stage="analyze">Transcribe lyrics</li><li data-stage="ready">Build slides</li></ol>
+        <p class="error-message" id="error-message" role="alert"></p>
+      </div>
+      <section class="result-card" id="result-card" aria-labelledby="result-title" hidden>
+        <div class="result-heading"><span class="result-icon" aria-hidden="true">✦</span><div><p class="eyebrow">YOUR PRESENTATION IS READY</p><h2 id="result-title"></h2></div></div>
+        <p class="result-meta" id="result-meta"></p>
+        <div class="preview" id="preview" dir="auto"></div>
+        <div class="result-actions"><button class="primary-action" id="start-presentation" type="button">Start presentation <span aria-hidden="true">→</span></button><button class="text-action" id="try-sample" type="button">Try sample slides</button></div>
+      </section>
+    </section>
+    <footer class="landing-footer"><span>Made for the moments we sing together.</span><span>LYRICSLIDE · BLUE GLASS</span></footer>
+  </main>
+
+  <section class="presentation" id="presentation" aria-label="Lyrics presentation" hidden>
+    <header class="presentation-top"><span class="presentation-brand"><span>♪</span> LyricSlide</span><span class="presentation-title" id="presentation-title"></span><button class="exit-presentation" id="exit-presentation" type="button" aria-label="Exit presentation">×</button></header>
+    <div class="slider-container" id="slider-container" aria-live="polite"></div>
+    <nav class="navigation-bar" id="navigation-bar" aria-label="Slide navigation">
+      <button class="nav-button" id="previous-slide" type="button" aria-label="Previous slide"><span class="arrow arrow-previous" aria-hidden="true"></span></button>
+      <span class="slide-counter" id="slide-counter" aria-live="polite">1 / 1</span>
+      <button class="nav-button" id="next-slide" type="button" aria-label="Next slide"><span class="arrow arrow-next" aria-hidden="true"></span></button>
+      <button class="fullscreen-button" id="fullscreen-button" type="button" aria-label="Enter fullscreen">⛶ <span>Fullscreen</span></button>
+    </nav>
+    <p class="keyboard-hint">← NEXT <span>·</span> PREVIOUS → <span>·</span> SPACE TO ADVANCE <span>·</span> F FULLSCREEN</p>
+  </section>
+</body>
+</html>
