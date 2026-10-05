@@ -1,72 +1,103 @@
 # LyricSlide
 
-LyricSlide turns authorized hymn/song audio into a clean, Arabic-first lyric presentation for a screen or projector. It combines an Express API, isolated media and Gemini services, and a lightweight HTML/CSS/JavaScript presentation renderer.
+LyricSlide turns an authorized YouTube hymn/song URL into a timestamped, standalone HTML lyrics presentation. The backend validates the URL, extracts temporary audio, asks Gemini to transcribe and structure lyrics, validates the response, and saves an HTML file with its CSS, JavaScript, and lyric data embedded. Downloaded audio is always removed. Once downloaded, the HTML can be opened directly without the backend.
 
 ## Features
 
-- YouTube URL validation for standard, short, Shorts, embed, and live links.
-- Audio transcription and slide structuring through Google's official Gemini GenAI JavaScript SDK.
-- Arabic RTL, English, and mixed-script slide direction detection.
-- Blue gradient and glass presentation theme, responsive controls, fullscreen, keyboard and swipe navigation.
-- Local sample presentation mode that does not call Gemini.
-- Temporary audio cleanup, request limits, rate limiting, centralized errors, and server-only API credentials.
+- Arabic-first RTL and English LTR presentation documents with mixed-script text direction.
+- Blue gradient, glass cards, gold accents, large lyric text, and responsive projector-friendly layout.
+- Embedded slide navigation, fullscreen, keyboard shortcuts, touch/swipe controls, and auto-hiding controls.
+- Server-side Gemini calls and structured-response validation.
+- Safe timestamped output files at `generated/lyricslide-YYYYMMDD-HHMMSS.html`.
+- Download endpoint and direct generated-file URL.
+- Input URL validation, request limits, rate limiting, temporary-media cleanup, filename validation, and path traversal protection.
+- Startup logs report whether yt-dlp and FFmpeg are detected.
 
 ## Requirements
 
 - Node.js 20 or newer and npm.
-- `yt-dlp` available on the backend host's PATH.
-- FFmpeg available on PATH; yt-dlp uses it to convert audio to MP3.
-- A Google Gemini API key for actual generation. The sample presentation works without one.
+- yt-dlp and FFmpeg on the backend process PATH.
+- A Gemini API key for real transcription.
 
-## Install
+### Windows installation
 
-```sh
+Open PowerShell and run:
+
+```powershell
+winget install --id yt-dlp.yt-dlp --source winget --accept-source-agreements --accept-package-agreements
+winget install --id Gyan.FFmpeg.Shared --source winget --accept-source-agreements --accept-package-agreements
+```
+
+Close and reopen PowerShell after installation so it reads the updated PATH, then verify:
+
+```powershell
+yt-dlp --version
+ffmpeg -version
+```
+
+The yt-dlp Winget package may install FFmpeg as a dependency; the separate FFmpeg package provides a general system installation. If Winget is unavailable, install both tools using another trusted package manager and ensure their executables are on PATH.
+
+## Install the project
+
+From the repository root (`D:\youtube_downloader\YouTubeURL-Downloader`):
+
+```powershell
 npm install
-copy .env.example .env
+Copy-Item .env.example .env
 ```
 
-On PowerShell, `Copy-Item .env.example .env` also works. Set `GEMINI_API_KEY` in `.env`. The secret is read only by the backend and is never sent to the browser.
+Edit `.env` and set `GEMINI_API_KEY` to your server-side Gemini key. Never place the key in frontend code. Existing `.env` values are local and ignored by Git.
 
-Install yt-dlp and FFmpeg using the package manager for your operating system, then confirm `yt-dlp --version` and `ffmpeg -version` work in the same shell used to run the backend.
-
-## Run
-
-In one terminal, start the API:
-
-```sh
-npm run dev
-```
-
-In another terminal, serve the frontend:
-
-```sh
-npm run frontend
-```
-
-Open <http://localhost:5501>. The API listens on <http://localhost:3000>. To run the backend without watch mode, use `npm start`.
-
-## Environment
+## Environment variables
 
 | Variable | Default | Purpose |
 | --- | --- | --- |
-| `PORT` | `3000` | API port |
-| `GEMINI_API_KEY` | — | Server-only Gemini API key |
-| `GEMINI_MODEL` | `gemini-3.8-flash` | Gemini model ID |
-| `CORS_ORIGIN` | `http://localhost:5501` | Comma-separated permitted browser origins |
+| `PORT` | `3000` | Backend API port |
+| `GEMINI_API_KEY` | — | Server-side Gemini API key |
+| `GEMINI_MODEL` | `gemini-3.8-flash` | Gemini model identifier |
+| `CORS_ORIGIN` | `http://localhost:5501` | Comma-separated allowed frontend origins |
 | `MEDIA_MAX_BYTES` | `18000000` | Maximum extracted audio size |
-| `MEDIA_TIMEOUT_MS` | `180000` | yt-dlp processing timeout |
+| `MEDIA_TIMEOUT_MS` | `180000` | yt-dlp timeout |
+| `YTDLP_PATH` | `yt-dlp` | Optional yt-dlp executable path |
+| `FFMPEG_PATH` | `ffmpeg` | Optional FFmpeg executable path |
+
+## Run locally
+
+Open two PowerShell windows in the project directory. Run the backend in the first:
+
+```powershell
+npm run dev
+```
+
+It listens on <http://localhost:3000>. Startup reports `yt-dlp detected` / `yt-dlp NOT FOUND` and `FFmpeg detected` / `FFmpeg NOT FOUND`.
+
+Run the frontend in the second:
+
+```powershell
+npm run frontend
+```
+
+It serves on <http://localhost:5501>. If LyricSlide is already running there, the command reports the existing URL rather than starting a duplicate server. Open the page, paste a YouTube link for content you are authorized to process, and click **Generate Lyrics Presentation**. When ready, choose **Open Presentation** or **Download HTML**.
+
+The API can be checked with:
+
+```powershell
+Invoke-RestMethod http://localhost:3000/api/health
+```
 
 ## API
 
+### Generate an HTML presentation
+
 `POST /api/generate`
 
-Request JSON:
+Request:
 
 ```json
 { "youtubeUrl": "https://www.youtube.com/watch?v=VIDEO_ID" }
 ```
 
-Successful response:
+Response:
 
 ```json
 {
@@ -75,50 +106,64 @@ Successful response:
     "title": "Song title",
     "artist": null,
     "language": "ar",
-    "slides": [
-      { "id": 1, "type": "title", "section": null, "text": "Song title" },
-      { "id": 2, "type": "lyrics", "section": "verse", "text": "Lyrics…" }
-    ]
+    "slideCount": 9
+  },
+  "file": {
+    "name": "lyricslide-20261005-193000.html",
+    "url": "/generated/lyricslide-20261005-193000.html"
   }
 }
 ```
 
-Errors use `{ "success": false, "error": { "code": "…", "message": "…" } }`. `GET /api/health` is a simple liveness check. The API allows 10 requests per IP per 15 minutes.
+Errors return `{ "success": false, "error": { "code": "...", "message": "..." } }`.
 
-## Try without Gemini
+### Open and download
 
-On the landing page, choose **Try sample slides** to load `frontend/sample-presentation.json`. This static fixture is separate from production generation.
+- `GET /generated/<filename>` serves the generated HTML for preview in a browser.
+- `GET /api/download/<filename>` downloads it as an HTML file.
+
+The download route only accepts timestamped LyricSlide filenames. The saved HTML embeds the presentation data, CSS, and JavaScript; it makes no API requests. Cairo is an optional external font, with local Arabic/system font fallbacks. Download it before stopping the backend, then open the file directly to present offline.
 
 ## Architecture
 
 ```text
-backend/src/controllers/  request orchestration
-backend/src/routes/       API routes
-backend/src/services/     media extraction, Gemini, presentation validation
-backend/src/middleware/   error mapping
-backend/src/utils/        URL normalization, schema validation, temp cleanup
-frontend/                 static page, styles, API client and independent renderer
-generated/                reserved for generated artifacts; no media is retained here
+backend/src/controllers/  API orchestration and file download
+backend/src/routes/       generation and download routes
+backend/src/services/     media extraction, Gemini, presentation validation, HTML generation
+backend/src/utils/        YouTube URL, presentation schema, output filename, and cleanup helpers
+backend/src/middleware/   centralized safe API errors
+frontend/                 small static input/result page and API client
+generated/                saved standalone HTML files (ignored by Git)
 ```
 
-The renderer accepts presentation JSON only. It does not know whether lyrics came from Gemini, a fixture, or another future source. Temporary audio is placed in a unique OS temporary directory and removed in a `finally` cleanup path.
+`backend/src/services/html-generator.service.js` takes validated presentation JSON and returns a complete HTML document. Model-supplied strings are JSON/HTML escaped before embedding and rendered using DOM `textContent`, never interpreted as HTML. The renderer is independent of how the lyrics were obtained.
 
-## Copyright and authorization
+## Development tests
 
-Use this application only for content you own or are authorized to download and process, and only where your use complies with applicable law, platform terms, and any licenses. You are responsible for having those rights. LyricSlide does not authenticate to YouTube, use account cookies, bypass DRM, defeat access controls, or circumvent paywalls. If a video is restricted or unavailable, the application reports a processing failure. Audio is sent to Google Gemini for analysis; review Google's applicable terms and data policies before processing sensitive content.
+Run:
+
+```powershell
+npm test
+```
+
+The local fixture at `frontend/sample-presentation.json` is used only by tests, not by the production generation endpoint. Tests check Arabic and English document direction, standalone inline JavaScript, escaping, safe filenames, HTML file saving, and presentation validation. A real transcription additionally requires an authorized, accessible video, yt-dlp, FFmpeg, network access, and a valid Gemini API key.
+
+## Media and copyright
+
+Use LyricSlide only for content you own or are authorized to download and process, and only where that processing complies with applicable law, platform terms, and licenses. You are responsible for obtaining permission. The media service does not use account cookies, bypass DRM, defeat access controls, or circumvent paywalls. Restricted and unavailable media fails with an error. Temporary audio is stored under a unique operating-system temporary directory and deleted after processing. Audio is sent to Google Gemini for analysis; review Google's terms and data policies before submitting sensitive content.
 
 ## Troubleshooting
 
-- **Could not process this video:** verify the URL, availability, permissions, and yt-dlp version.
-- **Install FFmpeg:** install FFmpeg and ensure `ffmpeg` is on the backend PATH.
-- **Gemini unavailable:** check `GEMINI_API_KEY`, quota, network access, and the configured model.
-- **Could not reach LyricSlide:** start the backend and verify `CORS_ORIGIN` matches the frontend origin.
-- **Font unavailable:** Cairo and the display fonts load from Google Fonts; system sans-serif and Arabic fallbacks remain configured.
+- **`yt-dlp NOT FOUND` / `YTDLP_NOT_FOUND`:** install yt-dlp, reopen the terminal, and restart the backend. Set `YTDLP_PATH` if it is installed outside PATH.
+- **`FFmpeg NOT FOUND` / `FFMPEG_NOT_FOUND`:** install FFmpeg, reopen the terminal, and restart the backend. Set `FFMPEG_PATH` if necessary.
+- **Media processing failed:** the backend logs the technical yt-dlp error. Confirm the URL is valid, the video is available, and your use is authorized. Private or restricted videos are not bypassed.
+- **Gemini error:** check the `.env` key, configured model, network access, and quota.
+- **Frontend cannot reach the API:** confirm both servers are running and `CORS_ORIGIN` exactly matches the frontend URL, including its port.
+- **No lyrics detected:** try a clearer recording. Lyric accuracy depends on the audio and model; review the saved HTML before presenting.
 
 ## Limitations
 
-- The server currently processes videos up to 15 minutes and audio up to the configured size limit.
-- Request-stage UI is indicative; backend progress events are not streamed.
-- Transcript accuracy depends on audio quality, language, and Gemini model performance. Review lyrics before public use.
-- Fullscreen support depends on browser permission and embedding context.
-- yt-dlp and FFmpeg are external system prerequisites and are not installed by `npm install`.
+- Videos are limited to 15 minutes and extracted audio to `MEDIA_MAX_BYTES`.
+- Generation progress is shown as an overall loading state; the API does not stream stage-by-stage events.
+- Cairo downloads from Google Fonts when online. The presentation remains usable offline with fallback fonts.
+- Browser fullscreen support varies by browser and embedding context.
