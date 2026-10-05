@@ -1,0 +1,11 @@
+{
+  "title": "أوبن بوك",
+  "artist": null,
+  "language": "ar",
+  "slides": [
+    { "id": 1, "type": "title", "section": null, "text": "أوبن بوك 📖" },
+    { "id": 2, "type": "lyrics", "section": "verse", "text": "جوه وصية أو شخصية\nهتلاقي نفسك في أوبن بوك 🌟" },
+    { "id": 3, "type": "lyrics", "section": "chorus", "text": "طول ما كتابك مفتوح دايماً\nأي عقدة معاك هتفك 💡" },
+    { "id": 4, "type": "lyrics", "section": "verse", "text": "افتح واقرأ واكتشف\nكلمة تشجعك وتنور طريقك" }
+  ]
+}

@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#142e57">
+  <meta name="description" content="Turn authorized hymn and song content into beautiful lyric presentations.">
+  <title>LyricSlide — lyrics, ready to share</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <main class="landing" id="landing">
+    <div class="landing-glow glow-one"></div><div class="landing-glow glow-two"></div>
+    <header class="brand"><span class="brand-mark" aria-hidden="true">♪</span><span>LyricSlide</span><span class="brand-tag">WORSHIP, MADE VISIBLE</span></header>
+    <section class="hero" aria-labelledby="hero-title">
+      <p class="eyebrow"><span></span> A brighter way to sing together</p>
+      <h1 id="hero-title">Words that bring<br><em>us together.</em></h1>
+      <p class="hero-copy">Turn an authorized hymn or song into a beautiful, ready-to-project lyric presentation.</p>
+      <form id="generate-form" class="generator">
+        <label for="youtube-url">YouTube video link</label>
+        <div class="input-wrap"><span class="link-icon" aria-hidden="true">↗</span><input id="youtube-url" name="youtubeUrl" type="url" placeholder="https://www.youtube.com/watch?v=..." autocomplete="url" required><button id="generate-button" type="submit"><span>Generate Lyrics Presentation</span><span aria-hidden="true">→</span></button></div>
+        <p class="form-note">Only submit media you’re authorized to process.</p>
+      </form>
+      <div class="status-panel" id="status-panel" aria-live="polite" hidden>
+        <div class="status-top"><span class="spinner" aria-hidden="true"></span><strong id="status-title">Preparing your presentation</strong></div>
+        <ol class="stages" id="stages"><li>Validate URL</li><li>Prepare audio</li><li>Send audio to Gemini</li><li>Extract lyrics</li><li>Generate HTML</li></ol>
+        <p class="error-message" id="error-message" role="alert"></p>
+      </div>
+      <section class="result-card" id="result-card" aria-labelledby="result-title" hidden>
+        <div class="result-heading"><span class="result-icon" aria-hidden="true">✓</span><div><p class="eyebrow">PRESENTATION READY</p><h2 id="result-title"></h2></div></div>
+        <p class="result-success">✓ Lyrics extracted <span>✓ Presentation generated</span></p>
+        <p class="result-meta" id="result-meta"></p>
+        <div class="result-actions"><a class="primary-action" id="open-presentation" href="#" target="_blank" rel="noopener">Open Presentation <span aria-hidden="true">↗</span></a><a class="text-action" id="download-html" href="#" download>Download HTML</a></div>
+      </section>
+    </section>
+    <footer class="landing-footer"><span>Made for the moments we sing together.</span><span>LYRICSLIDE · BLUE GLASS</span></footer>
+  </main>
+
+</body>
+</html>
